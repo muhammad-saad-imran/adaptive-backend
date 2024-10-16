@@ -13,8 +13,14 @@ import {
   BelongsTo,
   NotNull,
 } from 'sequelize-typescript';
+import {
+  Product,
+  QuoteData,
+  QuoteMetaData,
+  QuoteState,
+  StateName,
+} from 'src/insurance/types';
 import { Insured } from 'src/insurance/insured/insured.entity';
-import { Product, QuoteState, StateName } from 'src/insurance/types';
 
 @Table({ tableName: 'quotes' })
 export class Quote extends Model<
@@ -82,13 +88,13 @@ export class Quote extends Model<
   carrier?: string;
 
   @Column(DataType.JSONB)
-  meta_data: object;
+  meta_data: QuoteMetaData;
 
   @Column(DataType.JSONB)
   documents: object;
 
   @Column(DataType.JSONB)
-  data: object;
+  data: QuoteData;
 
   @Column(DataType.ENUM(...Object.values(Product)))
   product: Product;

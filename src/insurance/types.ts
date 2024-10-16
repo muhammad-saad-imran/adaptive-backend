@@ -132,18 +132,19 @@ export class BusinessInformation {
   phoneNumber: string;
 }
 
-export type QuoteData = {
-  meta_data: {
-    step: {
-      [value in Step]: boolean;
-    };
-    coverage: {
-      amount: number;
-      duration: number;
-      effectiveDate: string;
-      effectiveDateUtc: Date;
-      quoteAmount: number;
-    };
-    businessInformation: BusinessInformation;
+export type QuoteMetaData = {
+  step: {
+    [value in Step]: boolean;
   };
+};
+
+export type QuoteData = {
+  coverage?: {
+    amount: number;
+    duration: number;
+    effectiveDate: string;
+    effectiveDateUtc: Date;
+    premium: number;
+  };
+  businessInformation?: BusinessInformation;
 };

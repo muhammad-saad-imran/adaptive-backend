@@ -18,7 +18,7 @@ export class CreateQuoteDto {
   @IsEnum(Product)
   product: Product;
 
-  @ApiProperty({ default: 'Address' })
+  @ApiProperty({ default: 'address' })
   @IsEnum(Step)
   step: Step;
 

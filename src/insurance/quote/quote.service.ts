@@ -5,7 +5,6 @@ import { Insured } from 'src/insurance/insured/insured.entity';
 import { InsuredService } from 'src/insurance/insured/insured.service';
 import { Quote } from 'src/insurance/quote/quote.entity';
 import {
-  Address,
   BusinessInformation,
   Coverage,
   QuoteState,
@@ -25,19 +24,19 @@ export class QuoteService {
     return this.quoteModel.findByPk(id, { include: [this.insuredModel] });
   }
 
-  async processQuote(createDto: CreateQuoteDto) {
-    switch (createDto.step) {
+  async processQuote(quoteData: CreateQuoteDto) {
+    switch (quoteData.step) {
       case Step.Address:
-        return this.createQuote(createDto);
+        return this.createQuote(quoteData);
       case Step.Coverage:
-        return this.addCoverage(createDto.quoteId, createDto.coverage);
+        return this.addCoverage(quoteData.quoteId, quoteData.coverage);
       case Step.BusinessInformation:
         return this.addBusinessInformation(
-          createDto.quoteId,
-          createDto.businessInformation,
+          quoteData.quoteId,
+          quoteData.businessInformation,
         );
       case Step.Checkout:
-        return this.checkout(createDto.quoteId);
+        return this.checkout(quoteData.quoteId);
       default:
         throw new BadRequestException(
           'Step can only be Address, Coverage, BusinessInformation or Checkout',
@@ -45,23 +44,48 @@ export class QuoteService {
     }
   }
 
-  async createQuote(newQuote: CreateQuoteDto) {
+  async createQuote(quoteData: CreateQuoteDto) {
     const date = getDate();
-    const utc = new Date(formatDate(date));
+    const step: any = {};
+    Object.values(Step).map((item) => (step[item] = false));
+    step[Step.Address] = true;
+
     return this.quoteModel.create({
       status: QuoteState.Draft,
       quote_date: formatDate(date, 'MM/DD/YYYY'),
-      quote_date_utc: utc,
-      street: newQuote.address.street,
-      city: newQuote.address.city,
-      state: newQuote.address.state,
-      zip_code: newQuote.address.zipCode,
-      product: newQuote.product,
+      quote_date_utc: date.toDate(),
+      street: quoteData.address.street,
+      city: quoteData.address.city,
+      state: quoteData.address.state,
+      zip_code: quoteData.address.zipCode,
+      product: quoteData.product,
+      meta_data: {
+        step,
+      },
     });
   }
 
   async addCoverage(quoteId: string, coverage: Coverage) {
-    console.log({ coverage });
+    let quote = await this.findOne(quoteId);
+    await this.quoteModel.update(
+      {
+        meta_data: {
+          ...quote.meta_data,
+          step: { ...quote.meta_data.step, coverage: true },
+        },
+        data: {
+          ...quote.data,
+          coverage: {
+            amount: coverage.CoverageAmount,
+            duration: coverage.CoverageHours,
+            effectiveDate: formatDate(coverage.effectiveDate, 'MM/DD/YYYY'),
+            effectiveDateUtc: coverage.effectiveDate,
+            premium: coverage.CoverageAmount * coverage.CoverageHours,
+          },
+        },
+      },
+      { where: { id: quoteId } },
+    );
     return this.findOne(quoteId);
   }
 
@@ -70,8 +94,15 @@ export class QuoteService {
     businessInformation: BusinessInformation,
   ) {
     const newInsured = await this.insuredService.create(businessInformation);
+    const quote = await this.findOne(quoteId);
     await this.quoteModel.update(
-      { insured_id: newInsured.id },
+      {
+        meta_data: {
+          ...quote.meta_data,
+          step: { ...quote.meta_data.step, businessInformation: true },
+        },
+        insured_id: newInsured.id,
+      },
       { where: { id: quoteId } },
     );
     return this.findOne(quoteId);
@@ -79,13 +110,17 @@ export class QuoteService {
 
   async checkout(quoteId: string) {
     const date = getDate();
-    const utc = new Date(formatDate(date));
+    const quote = await this.findOne(quoteId);
     await this.quoteModel.update(
       {
         bound: true,
         bound_date: formatDate(date, 'MM/DD/YYYY'),
-        bound_date_utc: utc,
+        bound_date_utc: date.toDate(),
         status: QuoteState.Pending,
+        meta_data: {
+          ...quote.meta_data,
+          step: { ...quote.meta_data.step, checkout: true },
+        },
       },
       { where: { id: quoteId } },
     );

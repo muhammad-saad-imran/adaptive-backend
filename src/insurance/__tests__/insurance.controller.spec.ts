@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { QuoteController } from 'src/insurance/quote/quote.controller';
+import { QuoteController } from 'src/api/routes/insurance/quote.controller';
 
 describe('InsuranceController', () => {
   let controller: QuoteController;

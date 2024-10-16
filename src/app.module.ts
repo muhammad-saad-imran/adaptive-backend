@@ -6,11 +6,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { Quote } from 'src/insurance/quote/quote.entity';
 import { Insured } from 'src/insurance/insured/insured.entity';
-import { UserController } from './core/user/user.controller';
+import { InsuredModule } from 'src/insurance/insured/insured.module';
+import { InsuranceModule } from './insurance/insurance.module';
 
 @Module({
   imports: [
-    QuoteModule,
+    InsuranceModule,
     SequelizeModule.forRootAsync({
       inject: [ConfigService],
       useFactory(configService: ConfigService) {
@@ -22,7 +23,7 @@ import { UserController } from './core/user/user.controller';
     }),
     ConfigModule.forRoot({ isGlobal: true }),
   ],
-  controllers: [AppController, UserController],
+  controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}

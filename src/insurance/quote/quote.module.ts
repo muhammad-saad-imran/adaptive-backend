@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { QuoteController } from './quote.controller';
+import { QuoteController } from '../../api/routes/insurance/quote.controller';
 import { QuoteService } from './quote.service';
 import { InsuredModule } from '../insured/insured.module';
 import { SequelizeModule } from '@nestjs/sequelize';
