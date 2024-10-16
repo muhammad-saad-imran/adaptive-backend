@@ -18,7 +18,7 @@ export class ParseQuotePipe implements PipeTransform {
     }
 
     const quote = await this.quoteService.findOne(value.quoteId);
-    const meta_data = quote.dataValues.meta_data.step;
+    const is_step_completed = quote.dataValues.meta_data.step;
     const parsingError = new BadRequestException(
       'Complete all previous steps. Steps: address, coverage, businessInformation and checkout',
     );
@@ -27,21 +27,21 @@ export class ParseQuotePipe implements PipeTransform {
       case Step.Address:
         return value;
       case Step.Coverage: {
-        if (meta_data[Step.Address]) {
+        if (is_step_completed[Step.Address]) {
           return value;
         } else {
           throw parsingError;
         }
       }
       case Step.BusinessInformation: {
-        if (meta_data[Step.Coverage]) {
+        if (is_step_completed[Step.Coverage]) {
           return value;
         } else {
           throw parsingError;
         }
       }
       case Step.Checkout: {
-        if (meta_data[Step.BusinessInformation]) {
+        if (is_step_completed[Step.BusinessInformation]) {
           return value;
         } else {
           throw parsingError;
