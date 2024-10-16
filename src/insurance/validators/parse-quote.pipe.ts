@@ -16,9 +16,6 @@ export class ParseQuotePipe implements PipeTransform {
     if (!metatype || typeof metatype !== typeof CreateQuoteDto) {
       throw new BadRequestException('Invalid quotes data');
     }
-    if (value.step === Step.Address) {
-      return value;
-    }
 
     const quote = await this.quoteService.findOne(value.quoteId);
     const meta_data = quote.dataValues.meta_data.step;
@@ -27,6 +24,8 @@ export class ParseQuotePipe implements PipeTransform {
     );
 
     switch (value.step) {
+      case Step.Address:
+        return value;
       case Step.Coverage: {
         if (meta_data[Step.Address]) {
           return value;
