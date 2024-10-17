@@ -1,14 +1,17 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { Quote } from 'src/insurance/quote/quote.entity';
 import { Insured } from 'src/insurance/insured/insured.entity';
 import { InsuranceModule } from './insurance/insurance.module';
-import { BullModule } from '@nestjs/bullmq';
-import { QUOTES_QUEUE } from 'src/constants';
+import { AuthModule } from './auth/auth.module';
+import { User } from 'src/auth/user.entity';
+import { AuthGuard } from 'src/auth/auth.guard';
 
 @Module({
   imports: [
+    AuthModule,
     InsuranceModule,
     ConfigModule.forRoot({ isGlobal: true }),
     SequelizeModule.forRootAsync({
@@ -16,22 +19,16 @@ import { QUOTES_QUEUE } from 'src/constants';
       useFactory(configService: ConfigService) {
         return {
           uri: configService.getOrThrow('DATABASE_URI'),
-          models: [Quote, Insured],
-        };
-      },
-    }),
-    BullModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory(configService: ConfigService) {
-        return {
-          connection: {
-            host: configService.getOrThrow('REDIS_HOST'),
-            port: configService.getOrThrow('REDIS_PORT'),
-            password: configService.getOrThrow('REDIS_PASS'),
-          },
+          models: [Quote, Insured, User],
         };
       },
     }),
   ],
+  providers:[
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+  ]
 })
 export class AppModule {}

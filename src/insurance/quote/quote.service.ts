@@ -1,8 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { InjectQueue } from '@nestjs/bullmq';
 import { InjectModel } from '@nestjs/sequelize';
-import { Queue } from 'bullmq';
-import { QUOTES_QUEUE } from 'src/constants';
 import { CreateQuoteDto } from 'src/insurance/dtos/create-quote.dto';
 import { Insured } from 'src/insurance/insured/insured.entity';
 import { InsuredService } from 'src/insurance/insured/insured.service';
@@ -20,7 +17,6 @@ export class QuoteService {
   constructor(
     @InjectModel(Quote) private quoteModel: typeof Quote,
     @InjectModel(Insured) private insuredModel: typeof Insured,
-    @InjectQueue(QUOTES_QUEUE) quoteQueue: Queue,
     private insuredService: InsuredService,
   ) {}
 
