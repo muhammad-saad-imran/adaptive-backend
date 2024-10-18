@@ -21,7 +21,6 @@ export class QuoteController {
   @ApiParam({ name: 'id' })
   @Get(':id')
   async get(@Param('id', ParseUUIDPipe) id: string) {
-    console.log({ data: await this.quoteService.findOne(id) });
     return this.quoteService.findOne(id);
   }
 
